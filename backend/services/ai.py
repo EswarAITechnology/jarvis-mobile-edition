@@ -1,7 +1,6 @@
 import os
 import requests
 
-
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 
@@ -13,44 +12,32 @@ def ask_ai(message, memories=None):
 
     memories = memories or []
 
-    recent_memories = memories[-10:]
-
     memory_text = ""
 
-    if recent_memories:
-        memory_text = "\n\nPrevious conversation memory:\n"
-
-        for item in recent_memories:
-            memory_text += (
-                f"User: {item.get('user', '')}\n"
-                f"J.A.R.V.I.S: {item.get('assistant', '')}\n"
-            )
-
-    system_prompt = """
-You are J.A.R.V.I.S., a helpful AI assistant.
-
-Your communication style is:
-- Clear
-- Intelligent
-- Concise
-- Professional
-- Helpful
-
-Address the user as "Boss" when appropriate.
-
-Do not claim that you performed an action if you did not actually perform it.
-"""
+    for item in memories[-10:]:
+        memory_text += (
+            f"User: {item.get('user', '')}\n"
+            f"J.A.R.V.I.S: {item.get('assistant', '')}\n"
+        )
 
     payload = {
-        "model": "openai/gpt-chat-latest",
+        "model": "openai/gpt-oss-20b:free",
         "messages": [
             {
                 "role": "system",
-                "content": system_prompt
+                "content": (
+                    "You are J.A.R.V.I.S., a helpful AI assistant. "
+                    "Be clear, intelligent, concise and professional. "
+                    "Address the user as Boss when appropriate."
+                )
             },
             {
                 "role": "user",
-                "content": memory_text + "\n\nCurrent request:\n" + message
+                "content": (
+                    memory_text +
+                    "\nCurrent request:\n" +
+                    message
+                )
             }
         ]
     }
@@ -70,14 +57,18 @@ Do not claim that you performed an action if you did not actually perform it.
             timeout=60
         )
 
-        response.raise_for_status()
+        if not response.ok:
+            return (
+                f"J.A.R.V.I.S: OpenRouter returned "
+                f"{response.status_code}: {response.text}"
+            )
 
         data = response.json()
 
         return data["choices"][0]["message"]["content"]
 
     except requests.RequestException as error:
-        return f"J.A.R.V.I.S: Connection error: {error}"
+        return f"J.A.R.V.I.S: Network error: {error}"
 
     except (KeyError, IndexError, TypeError):
-        return "J.A.R.V.I.S: I received an unexpected response from the AI service."
+        return "J.A.R.V.I.S: Unexpected response from OpenRouter."
