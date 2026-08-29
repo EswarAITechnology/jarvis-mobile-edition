@@ -21,7 +21,7 @@ def ask_ai(message, memories=None):
         )
 
     payload = {
-        "model": ""model": "openai/gpt-oss-20b",
+        "model":"model": "openrouter/free",
         "messages": [
             {
                 "role": "system",
