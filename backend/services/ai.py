@@ -21,7 +21,7 @@ def ask_ai(message, memories=None):
         )
 
     payload = {
-        "model":"model": "openrouter/free",
+        "model": "openrouter/free",
         "messages": [
             {
                 "role": "system",
