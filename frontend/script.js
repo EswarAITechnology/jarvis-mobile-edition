@@ -1,3 +1,5 @@
+const API_URL = "https://jarvismobilebygos.onrender.com/";
+
 const chat = document.getElementById("chat");
 const input = document.getElementById("msg");
 const send = document.getElementById("send");
@@ -10,23 +12,54 @@ function add(text, who) {
 
   chat.appendChild(d);
   chat.scrollTop = chat.scrollHeight;
+
+  return d;
 }
 
-function sendMessage() {
-  const t = input.value.trim();
+async function sendMessage() {
+  const message = input.value.trim();
 
-  if (!t) return;
+  if (!message) return;
 
-  add("YOU: " + t, "user");
+  add("YOU: " + message, "user");
 
   input.value = "";
+  send.disabled = true;
 
-  add("J.A.R.V.I.S: Processing...", "ai");
+  const processing = add(
+    "J.A.R.V.I.S: Processing...",
+    "ai"
+  );
 
-  setTimeout(() => {
-    chat.lastElementChild.innerText =
-      "J.A.R.V.I.S: Systems online. How may I assist you, Boss?";
-  }, 1000);
+  try {
+    const response = await fetch(`${API_URL}/api/chat`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: message
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Backend request failed");
+    }
+
+    processing.innerText =
+      "J.A.R.V.I.S: " + data.response;
+
+  } catch (error) {
+    processing.innerText =
+      "J.A.R.V.I.S: Connection error. Please try again.";
+
+    console.error(error);
+  }
+
+  send.disabled = false;
+  input.focus();
 }
 
 send.addEventListener("click", sendMessage);
