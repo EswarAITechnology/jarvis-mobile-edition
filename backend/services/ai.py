@@ -42,7 +42,7 @@ Do not claim that you performed an action if you did not actually perform it.
 """
 
     payload = {
-        "model": "openai/gpt-oss-20b:free",
+        "model": "openai/gpt-chat-latest",
         "messages": [
             {
                 "role": "system",
